@@ -1,6 +1,5 @@
 FROM alpine:3.16 AS builder
-LABEL maintainer="tindy.it@gmail.com"
-ARG THREADS="4"
+ARG THREADS="2"
 ARG SHA=""
 
 # build minimized
@@ -21,8 +20,10 @@ RUN set -xe && \
     install -m644 quickjs/quickjs.h quickjs/quickjs-libc.h /usr/include/quickjs/ && \
     install -m644 quickjspp.hpp /usr/include && \
     cd .. && \
-    git clone https://github.com/PerMalmberg/libcron --depth=1 && \
+    git clone https://github.com/PerMalmberg/libcron.git && \
     cd libcron && \
+    git fetch origin aa3d4368d59abb9d51199755df7419194bc3e42e && \
+    git checkout aa3d4368d59abb9d51199755df7419194bc3e42e && \
     git submodule update --init && \
     cmake -DCMAKE_BUILD_TYPE=Release . && \
     make libcron -j $THREADS && \
@@ -37,7 +38,7 @@ RUN set -xe && \
     cmake -DCMAKE_CXX_STANDARD=11 . && \
     make install -j $THREADS && \
     cd .. && \
-    git clone https://github.com/asdlokj1qpi233/subconverter --depth=1 && \
+    git clone https://github.com/hqzzzz/subconverter --depth=1 && \
     cd subconverter && \
     [ -n "$SHA" ] && sed -i 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$SHA"'/' src/version.h;\
     python3 -m ensurepip && \
@@ -48,7 +49,6 @@ RUN set -xe && \
 
 # build final image
 FROM alpine:3.16
-LABEL maintainer="tindy.it@gmail.com"
 
 RUN apk add --no-cache --virtual subconverter-deps pcre2 libcurl yaml-cpp
 
